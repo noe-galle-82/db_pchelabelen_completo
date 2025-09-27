@@ -1,0 +1,32 @@
+cat > .gitignore << EOL
+# ------------------------------------
+# 1. Entorno Virtual (¡Crucial!)
+# ------------------------------------
+env/
+venv/
+*.pydevproject
+.metadata
+.gradle
+.idea/
+.vscode/
+
+# ------------------------------------
+# 2. Archivos de Python y Compilados
+# ------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+
+# ------------------------------------
+# 3. Datos de Base de Datos y Seguridad
+# ------------------------------------
+*.sqlite3
+db.sqlite3
+settings_local.py
+
+# ------------------------------------
+# 4. Archivos de Sistema Operativo
+# ------------------------------------
+.DS_Store
+Thumbs.db
+EOL
