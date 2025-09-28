@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,9 +51,13 @@ INSTALLED_APPS = [
     'tipo_movimientos',
     'tipo_pago',
     'core',
+    'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    "django.middleware.common.CommonMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -88,9 +93,9 @@ WSGI_APPLICATION = 'pchelabelen_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Indica que usaremos MySQL
-        'NAME': 'db2pchelabelen',              # Nombre de la DB que creaste
+        'NAME': 'pchela_db',              # Nombre de la DB que creaste
         'USER': 'root',           # Tu usuario de MySQL (e.g., 'root' o 'user_django')
-        'PASSWORD': '291003',    # Tu contraseña de MySQL
+        'PASSWORD': 'root',    # Tu contraseña de MySQL
         'HOST': 'localhost',                  # Dirección donde corre MySQL
         'PORT': '3306',                       # Puerto estándar de MySQL
         'OPTIONS': {
@@ -146,3 +151,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ]
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
