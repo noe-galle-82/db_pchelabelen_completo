@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'proveedores',
     'tipo_movimientos',
     'tipo_pago',
-    'core',
+    'core.apps.CoreConfig',
     'rest_framework',
     'corsheaders',
     'django_rest_passwordreset',
@@ -74,7 +74,7 @@ ROOT_URLCONF = 'pchelabelen_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -171,10 +171,15 @@ SIMPLE_JWT = {
 }
 
 # Configuración SMTP para envío de emails con SendGrid
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"  # SendGrid SMTP
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Para debug (comentado)
 EMAIL_HOST = "smtp.sendgrid.net"   # Servidor SMTP de SendGrid
 EMAIL_PORT = 587                   # Puerto estándar TLS
 EMAIL_USE_TLS = True               # TLS obligatorio en SendGrid
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')         # Desde .env
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # API Key desde .env
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')    # Email remitente desde .env
+
+# Configuración para django-rest-passwordreset
+DJANGO_REST_PASSWORDRESET_EMAIL_SUBJECT = "Pchela Belén - Recuperación de contraseña"
+DJANGO_REST_PASSWORDRESET_EMAIL_FROM = config('DEFAULT_FROM_EMAIL')
