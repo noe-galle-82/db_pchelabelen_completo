@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q=kffe!2f1m^_-bxq-c2r=c*l1d_vwrp@atclh_ji67&jfl86%'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -169,12 +170,11 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
-# Configuración SMTP para envío de emails con Outlook
+# Configuración SMTP para envío de emails con SendGrid
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.office365.com"   # Servidor SMTP de Outlook
+EMAIL_HOST = "smtp.sendgrid.net"   # Servidor SMTP de SendGrid
 EMAIL_PORT = 587                   # Puerto estándar TLS
-EMAIL_USE_TLS = True               # TLS obligatorio en Outlook
-
-EMAIL_HOST_USER = "sistema.pchela@outlook.com"   # 👈 CAMBIAR: tu correo de Outlook
-EMAIL_HOST_PASSWORD = "cbsdwddjluzoztvp"       # 👈 CAMBIAR: tu contraseña de Outlook
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_USE_TLS = True               # TLS obligatorio en SendGrid
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')         # Desde .env
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # API Key desde .env
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')    # Email remitente desde .env

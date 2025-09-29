@@ -23,6 +23,7 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 settings_local.py
+.env
 
 # ------------------------------------
 # 4. Archivos de Sistema Operativo
