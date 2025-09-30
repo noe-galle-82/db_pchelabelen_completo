@@ -93,9 +93,9 @@ WSGI_APPLICATION = 'pchelabelen_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Indica que usaremos MySQL
-        'NAME': 'pchela_db',              # Nombre de la DB que creaste
+        'NAME': 'db2pchelabelen',              # Nombre de la DB que creaste
         'USER': 'root',           # Tu usuario de MySQL (e.g., 'root' o 'user_django')
-        'PASSWORD': 'root',    # Tu contraseña de MySQL
+        'PASSWORD': '291003',    # Tu contraseña de MySQL
         'HOST': 'localhost',                  # Dirección donde corre MySQL
         'PORT': '3306',                       # Puerto estándar de MySQL
         'OPTIONS': {
