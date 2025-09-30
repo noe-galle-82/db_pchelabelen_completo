@@ -1,0 +1,203 @@
+<!-- Template para registrar_venta.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Nueva Venta</title>
+    <!-- Asumo que usarás Tailwind CSS o CSS propio para estilizar -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos básicos para el formset de productos */
+        .detalle-item {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+        .detalle-item:last-of-type {
+            border-bottom: none;
+        }
+        
+        /* 🟢 Estilos aplicados por selector para asegurar la estética de los campos */
+        .detalle-item input,
+        .detalle-item select,
+        .detalle-item textarea,
+        .grid input,
+        .grid select,
+        .grid textarea {
+            /* Aplicamos estilos de Tailwind directamente al input/select */
+            --tw-ring-color: #4f46e5; /* Color del focus ring */
+            @apply w-full border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500;
+        }
+        
+        /* Asegurar que el select del formset se vea bien */
+        .detalle-item select {
+            min-width: 150px; /* Evita que el campo FK se achique demasiado */
+        }
+        
+        /* Ocultar el campo DELETE del formset (solo si no es visible al inicio) */
+        input[type="checkbox"][id$="DELETE"] {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8 font-sans">
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-xl shadow-2xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">Registrar Nueva Venta</h1>
+
+        <!-- Mensajes de Django (éxito/error) -->
+        {% if messages %}
+            <ul class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <li class="p-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Sección de Datos de la Venta (VentaForm) -->
+            <fieldset class="border border-gray-300 p-4 rounded-lg shadow-sm">
+                <legend class="text-lg font-semibold text-gray-700 px-2">Información General de la Venta</legend>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                    <!-- Iterar sobre los campos del formulario principal -->
+                    {% for field in venta_form %}
+                        <div class="flex flex-col">
+                            <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-600 mb-1">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <p class="text-xs text-red-500 mt-1">{{ field.errors|striptags }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </fieldset>
+
+            <!-- Sección de Detalles de la Venta (Formset) -->
+            <fieldset class="border border-gray-300 p-4 rounded-lg shadow-sm">
+                <legend class="text-lg font-semibold text-gray-700 px-2">Productos Vendidos</legend>
+                
+                {{ formset.management_form }}
+                
+                <div id="formset-container" class="mt-4 space-y-4">
+                    {% for form in formset %}
+                        <div class="detalle-item bg-gray-50 p-3 rounded-lg shadow-inner">
+                            {% for field in form.visible_fields %}
+                                <div class="flex flex-col flex-1">
+                                    <label for="{{ field.id_for_label }}" class="text-xs font-medium text-gray-500 mb-1">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <p class="text-xs text-red-500 mt-1">{{ field.errors|striptags }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            
+                            <!-- Checkbox de DELETE (oculto) -->
+                            {% for field in form.hidden_fields %}
+                                {{ field }}
+                            {% endfor %}
+                            
+                            <!-- Botón de eliminar (si se permite) -->
+                            {% if formset.can_delete %}
+                                <button type="button" class="delete-row text-red-500 hover:text-red-700 text-sm p-1 transition duration-150 ease-in-out" title="Eliminar Producto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 6h6v10H7V6z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button type="button" id="add-item" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    + Agregar Producto
+                </button>
+            </fieldset>
+
+            <div class="pt-4 border-t mt-6">
+                <button type="submit" class="w-full inline-flex justify-center py-3 px-6 border border-transparent rounded-lg shadow-md text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Registrar Venta
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- JavaScript para manejar la adición y eliminación dinámica de formsets -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('formset-container');
+            const addButton = document.getElementById('add-item');
+            const totalForms = document.getElementById('id_{{ formset.prefix }}-TOTAL_FORMS');
+            
+            let emptyForm = null;
+            const initialForms = container.querySelector('.detalle-item');
+            
+            if (initialForms) {
+                // Clonar el primer formulario, que Django crea vacío si extra=1
+                emptyForm = initialForms.cloneNode(true);
+                // Usar __prefix__ para marcar los campos como plantillas
+                emptyForm.innerHTML = emptyForm.innerHTML.replace(new RegExp('({{ formset.prefix }}-(\\d+)-)', 'g'), `{{ formset.prefix }}-__prefix__-`);
+                
+                // Limpiar valores del formulario vacío clonado
+                emptyForm.querySelectorAll('input, select').forEach(input => {
+                    input.value = '';
+                    if (input.type === 'checkbox' && input.id.includes('DELETE')) {
+                        input.checked = false;
+                    }
+                });
+
+            } else {
+                 console.error("No se encontró el formulario inicial para clonar. Asegúrate de que 'extra=1' está configurado o de que los formularios iniciales se están renderizando.");
+                 return; // Salir si no se puede clonar nada
+            }
+
+            // Función para actualizar los índices de los campos
+            function updateFormIndex(element, index) {
+                const idRegex = new RegExp('({{ formset.prefix }}-(\\d+|__prefix__)-)', 'g');
+                element.innerHTML = element.innerHTML.replace(idRegex, `{{ formset.prefix }}-${index}-`);
+            }
+
+            // Manejar la adición de un nuevo formulario
+            addButton.addEventListener('click', function() {
+                const currentForms = parseInt(totalForms.value);
+                
+                if (!emptyForm) return;
+
+                // Clonar el formulario vacío (plantilla)
+                const newForm = emptyForm.cloneNode(true);
+                updateFormIndex(newForm, currentForms); 
+
+                container.appendChild(newForm);
+                totalForms.value = currentForms + 1;
+                
+                attachDeleteHandler(newForm);
+                newForm.style.display = 'flex'; // Asegurar que sea visible si fue ocultado antes
+            });
+
+            // Manejar la eliminación de un formulario
+            function attachDeleteHandler(formElement) {
+                const deleteButton = formElement.querySelector('.delete-row');
+                if (deleteButton) {
+                    deleteButton.addEventListener('click', function() {
+                        const deleteCheckbox = formElement.querySelector('input[type="checkbox"][id$="DELETE"]');
+                        if (deleteCheckbox) {
+                            // Marcar el checkbox DELETE en lugar de remover el elemento
+                            deleteCheckbox.checked = true;
+                            formElement.style.display = 'none'; // Ocultar visualmente
+                        }
+                    });
+                }
+            }
+
+            // Adjuntar manejadores de eliminación a los formularios existentes
+            container.querySelectorAll('.detalle-item').forEach(attachDeleteHandler);
+        });
+
+    </script>
+</body>
+</html>

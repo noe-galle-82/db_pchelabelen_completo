@@ -18,7 +18,6 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,11 +36,13 @@ INSTALLED_APPS = [
     'productos',
     'proveedores',
     'tipo_movimientos',
+    # 'empleados', <-- ELIMINADO: El modelo Empleados reside ahora en 'core'.
     'tipo_pago',
     'core',
     'rest_framework',
     'corsheaders',
 ]
+
 
 MIDDLEWARE = [
     # 1. Seguridad (Debe ser lo primero)
@@ -97,9 +98,9 @@ DATABASES = {
     }
 }
 #DATABASES = {
-    #   'default': {
-    #      'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
+    #   'default': {
+    #      'ENGINE': 'django.db.backends.sqlite3',
+    #      'NAME': BASE_DIR / 'db.sqlite3',
     # }
 #}
 

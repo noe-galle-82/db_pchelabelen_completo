@@ -1,25 +1,30 @@
 from django.contrib import admin
-from .models import Venta, DetalleVenta
+from .models import Venta 
+# from detalles_venta.admin import DetalleVentaInline # Importar el Inline que ya definimos (COMENTADO TEMPORALMENTE)
 
-# Clase Inline para ver los detalles dentro de la venta
-class DetalleVentaInline(admin.TabularInline):
-    model = DetalleVenta
-    extra = 0 # No muestra filas extra vacías
-
-# --- Registro de Venta ---
 @admin.register(Venta)
 class VentaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fecha_venta', 'empleado', 'caja', 'monto_total')
-    list_filter = ('fecha_venta', 'empleado')
-    search_fields = ('empleado__user__username',)
-    # Muestra los detalles de la venta en la misma página
-    inlines = [DetalleVentaInline] 
-    raw_id_fields = ('caja', 'empleado') 
+    # 🚨 CORRECCIÓN: Asumo que el campo total se llama 'total_venta' para que funcione list_display y readonly_fields.
+    list_display = (
+        'pk',
+        'fecha_venta',
+        'total_venta', # Corregido de 'total'
+        # Agrega aquí otros campos importantes de Venta si los tienes
+    )
+    
+    fields = (
+        'fecha_venta',
+        'total_venta', # Corregido de 'total'
+        # Agrega aquí otros campos de Venta que quieras editar
+    )
 
-# No necesitamos registrar DetalleVenta por separado si usamos Inline, pero lo hacemos por si acaso.
-# @admin.register(DetalleVenta)
-# class DetalleVentaAdmin(admin.ModelAdmin):
-#     list_display = ('id_venta', 'id_producto', 'cantidad', 'precio_unitario')
-#     raw_id_fields = ('id_venta',)
+    # Si quieres mostrar detalles inline, descomenta la siguiente línea
+    # inlines = [DetalleVentaInline] # COMENTADO TEMPORALMENTE
 
+    # 🚨 CORRECCIÓN: Usamos 'total_venta'
+    readonly_fields = ('total_venta', 'fecha_venta') 
+
+    # 🚨 CORRECCIÓN: Usar el nombre del campo real para el filtro.
+    list_filter = ('fecha_venta',) 
+    search_fields = ('pk',) 
 

@@ -2,11 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # URL principal para registrar una nueva venta: /ventas/registrar/
+    # Mapea la función registrar_venta a la URL /ventas/registrar/
     path('registrar/', views.registrar_venta, name='registrar_venta'),
     
-    # URL de redirección después de un registro exitoso: /ventas/exito/
+    # Mapea la función de éxito (a donde redirige después de guardar)
     path('exito/', views.venta_exitosa_placeholder, name='venta_exitosa'),
-    
-    # Añade aquí otras URLs relacionadas con Ventas (ej: listar, editar, eliminar)
 ]
