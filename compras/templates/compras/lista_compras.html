@@ -1,0 +1,42 @@
+{% extends 'base.html' %} 
+
+{% block title %}Lista de Compras{% endblock %}
+
+{% block content %}
+    <h1>Listado de Compras</h1>
+    {# Asegúrate de que tu vista pasa una variable llamada 'lista_compras' #}
+    {% if lista_compras %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Proveedor</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for compra in lista_compras %}
+                <tr>
+                    <td>{{ compra.id }}</td>
+                    <td>{{ compra.proveedor }}</td>
+                    <td>{{ compra.fecha|date:"Y-m-d" }}</td>
+                    <td>${{ compra.total|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'detalle_compra' compra.id %}" class="btn btn-sm btn-info">Ver</a>
+                        <a href="{% url 'editar_compra' compra.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No hay compras registradas.
+        </div>
+    {% endif %}
+
+    <a href="{% url 'nueva_compra' %}" class="btn btn-primary mt-3">Añadir Nueva Compra</a>
+
+{% endblock content %}

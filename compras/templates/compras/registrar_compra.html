@@ -1,0 +1,112 @@
+{% extends 'base.html' %} 
+{% load static %} 
+
+{% block title %}Registrar Nueva Compra{% endblock %} 
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">📝 Registro de Nueva Compra</h2>
+    
+    {# Mensajes de Django (éxito o error) #}
+    {% if messages %} 
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %} 
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        {# ======================================================= #}
+        {# Sección de Datos Generales de la Compra (Encabezado) #}
+        {# ======================================================= #}
+        <fieldset class="border p-3 mb-4">
+            <legend class="w-auto px-2">Datos Generales de la Compra</legend>
+            {% for field in compra_form %}
+                <div class="form-group row mb-2">
+                    <label class="col-sm-3 col-form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    <div class="col-sm-9">
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </fieldset>
+
+        {# ======================================================= #}
+        {# Sección de Detalles y Productos (Formset) #}
+        {# ======================================================= #}
+        <fieldset class="border p-3 mb-4">
+            <legend class="w-auto px-2">Detalles y Productos</legend>
+            
+            {# ESTO ES CRÍTICO: El management form debe ir antes de los detalles #}
+            {{ formset.management_form }} 
+
+            <div id="formset-container">
+                {# Bucle que renderiza las filas de detalles (al menos la extra=1 vacía) #}
+                {% for form in formset %}
+                    <div class="detalle-form-row border p-3 mb-3" data-form-prefix="{{ form.prefix }}">
+                        <h4>Producto #<span class="producto-index">{{ forloop.counter }}</span></h4>
+                        
+                        {# Campos ocultos (como id) y campos visibles del detalle #}
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                        
+                        {% for field in form.visible_fields %}
+                            <div class="form-group row mb-2">
+                                <label class="col-sm-3 col-form-label" for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                                <div class="col-sm-6">
+                                    {{ field }}
+                                </div>
+                                {% if field.errors %}
+                                    <div class="col-sm-3 text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        
+                        {# Elemento para mostrar el subtotal calculado por JS #}
+                        <div class="form-group row mb-2">
+                            <label class="col-sm-3 col-form-label">Subtotal ($):</label>
+                            <div class="col-sm-6">
+                                <span class="subtotal-display form-control-plaintext font-weight-bold" id="subtotal-{{ form.prefix }}">0.00</span>
+                            </div>
+                        </div>
+
+                        {# Checkbox para eliminar la fila #}
+                        <div class="form-check mt-2">
+                            {{ form.DELETE }}
+                            <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">🗑️ Eliminar Producto</label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Botón que requiere JS para duplicar la fila #}
+            <button type="button" class="btn btn-outline-secondary mt-3" id="add-product-btn">➕ Añadir Producto</button>
+        </fieldset>
+
+        {# ======================================================= #}
+        {# Totales y Botón de Guardar #}
+        {# ======================================================= #}
+        <div class="total-section text-right border-top pt-3 mb-5">
+            <h3>Total de la Compra: <span id="compra-total-display">$0.00</span></h3>
+            <button type="submit" class="btn btn-primary btn-lg mt-2">Guardar Compra y Actualizar Inventario</button>
+        </div>
+    </form>
+</div>
+
+{# ======================================================= #}
+{# NOTA: NECESITAS CÓDIGO JAVASCRIPT AQUÍ O EN UN ARCHIVO EXTERNO #}
+{# PARA QUE FUNCIONE LA ADICIÓN DE FILAS Y EL CÁLCULO DE TOTALES. #}
+{# ======================================================= #}
+{% block extra_js %}
+    <script>
+        // Aquí debe ir la lógica de Django Formset (duplicar filas y actualizar TOTAL_FORMS)
+        // y la lógica para calcular subtotales y el total general.
+    </script>
+{% endblock %}
+
+{% endblock %}
