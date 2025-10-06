@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User, Group
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
+from .models import Producto
 
 
 class UserSerializer(ModelSerializer):
@@ -52,3 +53,21 @@ class UserSerializer(ModelSerializer):
             instance.groups.add(group)
 
         return instance
+    
+class ProductoSerializer(serializers.ModelSerializer):
+    imagen = serializers.ImageField(use_url=True, required=False)
+    
+    class Meta:
+        model = Producto
+        fields = ['id', 'nombre', 'precio', 'cantidad', 'categoria', 'imagen', 'creado']
+        read_only_fields = ['id', 'creado']
+    
+    def validate_precio(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El precio debe ser mayor a 0")
+        return value
+    
+    def validate_cantidad(self, value):
+        if value < 0:
+            raise serializers.ValidationError("La cantidad no puede ser negativa")
+        return value

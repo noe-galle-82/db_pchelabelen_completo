@@ -8,3 +8,4 @@ python-decouple==3.8
 sendgrid==6.12.5
 mysqlclient==2.2.7
 tzdata==2025.2
+django-filter==24.3

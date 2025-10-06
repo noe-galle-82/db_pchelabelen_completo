@@ -1,8 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_delete, pre_save
+from django.dispatch import receiver
+import os
 
 # ==========================================================
-# 1. PERFIL DE EMPLEADO (Sustituye a la tabla Usuarios para fines de negocio)
+# 1. PERFIL DE EMPLEADO
 # ==========================================================
 class EmpleadoProfile(models.Model):
     # Enlazamos al usuario de Django (tabla auth_user)
@@ -18,3 +21,51 @@ class EmpleadoProfile(models.Model):
 
     def __str__(self):
         return f"Empleado: {self.user.username} ({self.nombre_tipo_usuario})"
+
+# ==========================================================
+# 2. CATEGORÍAS DE PRODUCTOS
+# ==========================================================
+
+class Producto(models.Model):
+    nombre = models.CharField(max_length=120)
+    precio = models.DecimalField(max_digits=12, decimal_places=2)
+    cantidad = models.PositiveIntegerField(default=0)
+    categoria = models.CharField(max_length=80, blank=True)
+    imagen = models.ImageField(upload_to="productos/", blank=True, null=True)  # opcional
+    creado = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+# SEÑALES PARA ELIMINAR IMÁGENES AUTOMÁTICAMENTE
+
+@receiver(post_delete, sender=Producto)
+def eliminar_imagen_producto(sender, instance, **kwargs):
+    """
+    Elimina la imagen del disco cuando se elimina un producto
+    """
+    if instance.imagen:
+        if os.path.isfile(instance.imagen.path):
+            os.remove(instance.imagen.path)
+
+@receiver(pre_save, sender=Producto)
+def eliminar_imagen_anterior(sender, instance, **kwargs):
+    """
+    Elimina la imagen anterior cuando se actualiza con una nueva imagen
+    """
+    if not instance.pk:
+        return False
+    
+    try:
+        old_file = Producto.objects.get(pk=instance.pk).imagen
+    except Producto.DoesNotExist:
+        return False
+    
+    new_file = instance.imagen
+    if not old_file == new_file:
+        if old_file and os.path.isfile(old_file.path):
+            os.remove(old_file.path)
+
+# ==========================================================
+# 3. VENTAS
+# ==========================================================
