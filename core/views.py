@@ -7,6 +7,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework import parsers
 from .models import Producto
+from lotes.models import Lote
+from lotes.serializers import LoteSerializer
 
 from .serializers import ProductoSerializer
 from .serializers import UserSerializer
@@ -156,3 +158,15 @@ class ProductoViewSet(viewsets.ModelViewSet):
             return Response({
                 'message': f'Error en la cantidad: {str(e)}'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def lotes(self, request, pk=None):
+        """Historial de lotes del producto"""
+        producto = self.get_object()
+        lotes = Lote.objects.filter(producto=producto).order_by('-creado')
+        serializer = LoteSerializer(lotes, many=True)
+        return Response({
+            'producto': producto.id,
+            'total_lotes': lotes.count(),
+            'data': serializer.data
+        })

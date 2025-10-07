@@ -30,7 +30,13 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=120)
     precio = models.DecimalField(max_digits=12, decimal_places=2)
     cantidad = models.PositiveIntegerField(default=0)
+    # Campo legacy (texto) - se eliminará tras migrar datos a categoria_ref
     categoria = models.CharField(max_length=80, blank=True)
+    # Nuevo FK a Categoria (app productos)
+    categoria_ref = models.ForeignKey(
+        'productos.Categoria', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='productos'
+    )
     imagen = models.ImageField(upload_to="productos/", blank=True, null=True)  # opcional
     creado = models.DateTimeField(auto_now_add=True)
 

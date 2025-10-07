@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import me, get_users, UserViewSet, ProductoViewSet
+from productos.views import CategoriaViewSet
+from lotes.views import LoteViewSet
+from proveedores.views import ProveedorViewSet
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -9,6 +12,9 @@ from django.conf.urls.static import static
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'productos', ProductoViewSet)
+router.register(r'categorias', CategoriaViewSet)
+router.register(r'lotes', LoteViewSet)
+router.register(r'proveedores', ProveedorViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

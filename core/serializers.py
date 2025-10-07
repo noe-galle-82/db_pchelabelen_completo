@@ -2,6 +2,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import Producto
+from productos.models import Categoria
 
 
 class UserSerializer(ModelSerializer):
@@ -54,19 +55,39 @@ class UserSerializer(ModelSerializer):
 
         return instance
     
+class CategoriaMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categoria
+        fields = ['id', 'nombre']
+
 class ProductoSerializer(serializers.ModelSerializer):
     imagen = serializers.ImageField(use_url=True, required=False)
-    
+    categoria_id = serializers.PrimaryKeyRelatedField(
+        source='categoria_ref', queryset=Categoria.objects.all(), allow_null=True, required=False
+    )
+    categoria_nombre = serializers.SerializerMethodField()
+
     class Meta:
         model = Producto
-        fields = ['id', 'nombre', 'precio', 'cantidad', 'categoria', 'imagen', 'creado']
+        fields = [
+            'id', 'nombre', 'precio', 'cantidad',
+            'categoria',          # legacy texto (temporal)
+            'categoria_id',       # FK writable
+            'categoria_nombre',   # derivado
+            'imagen', 'creado'
+        ]
         read_only_fields = ['id', 'creado']
-    
+
+    def get_categoria_nombre(self, obj):
+        if obj.categoria_ref:
+            return obj.categoria_ref.nombre
+        return obj.categoria or None
+
     def validate_precio(self, value):
         if value <= 0:
             raise serializers.ValidationError("El precio debe ser mayor a 0")
         return value
-    
+
     def validate_cantidad(self, value):
         if value < 0:
             raise serializers.ValidationError("La cantidad no puede ser negativa")
