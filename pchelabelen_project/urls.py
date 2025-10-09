@@ -5,6 +5,7 @@ from core.views import me, get_users, UserViewSet, ProductoViewSet
 from productos.views import CategoriaViewSet
 from lotes.views import LoteViewSet
 from proveedores.views import ProveedorViewSet
+from marcas.views import MarcaViewSet
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -15,6 +16,7 @@ router.register(r'productos', ProductoViewSet)
 router.register(r'categorias', CategoriaViewSet)
 router.register(r'lotes', LoteViewSet)
 router.register(r'proveedores', ProveedorViewSet)
+router.register(r'marcas', MarcaViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

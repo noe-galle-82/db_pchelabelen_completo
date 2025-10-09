@@ -57,8 +57,8 @@ class ProductoViewSet(viewsets.ModelViewSet):
     serializer_class = ProductoSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['categoria']
-    search_fields = ['nombre', 'categoria']
+    filterset_fields = ['categoria', 'categoria_ref', 'marca']
+    search_fields = ['nombre', 'categoria', 'categoria_ref__nombre', 'marca__nombre_marca']
     ordering_fields = ['nombre', 'precio', 'cantidad', 'creado']
     ordering = ['-creado']  # Por defecto ordenar por más reciente
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]

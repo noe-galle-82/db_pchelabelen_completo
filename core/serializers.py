@@ -2,6 +2,8 @@ from django.contrib.auth.models import User, Group
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import Producto
+from marcas.models import Marca
+from marcas.serializers import MarcaSerializer
 from productos.models import Categoria
 
 
@@ -66,6 +68,10 @@ class ProductoSerializer(serializers.ModelSerializer):
         source='categoria_ref', queryset=Categoria.objects.all(), allow_null=True, required=False
     )
     categoria_nombre = serializers.SerializerMethodField()
+    marca_id = serializers.PrimaryKeyRelatedField(
+        source='marca', queryset=Marca.objects.all(), allow_null=True, required=False
+    )
+    marca = MarcaSerializer(read_only=True)
 
     class Meta:
         model = Producto
@@ -74,6 +80,8 @@ class ProductoSerializer(serializers.ModelSerializer):
             'categoria',          # legacy texto (temporal)
             'categoria_id',       # FK writable
             'categoria_nombre',   # derivado
+            'marca_id',           # FK writable
+            'marca',              # nested read-only
             'imagen', 'creado'
         ]
         read_only_fields = ['id', 'creado']

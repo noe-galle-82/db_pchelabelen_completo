@@ -37,6 +37,11 @@ class Producto(models.Model):
         'productos.Categoria', on_delete=models.SET_NULL,
         null=True, blank=True, related_name='productos'
     )
+    # Nueva relación a Marca (app marcas)
+    marca = models.ForeignKey(
+        'marcas.Marca', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='productos'
+    )
     imagen = models.ImageField(upload_to="productos/", blank=True, null=True)  # opcional
     creado = models.DateTimeField(auto_now_add=True)
 
