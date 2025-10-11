@@ -6,6 +6,7 @@ from productos.views import CategoriaViewSet
 from lotes.views import LoteViewSet
 from proveedores.views import ProveedorViewSet
 from marcas.views import MarcaViewSet
+from movimientos_caja.views import CajaViewSet, MovimientoDeCajaViewSet
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,6 +18,8 @@ router.register(r'categorias', CategoriaViewSet)
 router.register(r'lotes', LoteViewSet)
 router.register(r'proveedores', ProveedorViewSet)
 router.register(r'marcas', MarcaViewSet)
+router.register(r'caja', CajaViewSet, basename='caja')
+router.register(r'caja-movimientos', MovimientoDeCajaViewSet, basename='caja-movimientos')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
