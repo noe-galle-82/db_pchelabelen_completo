@@ -5,8 +5,10 @@ from core.views import me, get_users, UserViewSet, ProductoViewSet
 from productos.views import CategoriaViewSet
 from lotes.views import LoteViewSet
 from proveedores.views import ProveedorViewSet
+from clientes.views import ClienteViewSet
 from marcas.views import MarcaViewSet
 from movimientos_caja.views import CajaViewSet, MovimientoDeCajaViewSet
+from ventas.views import VentaViewSet
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,9 +19,11 @@ router.register(r'productos', ProductoViewSet)
 router.register(r'categorias', CategoriaViewSet)
 router.register(r'lotes', LoteViewSet)
 router.register(r'proveedores', ProveedorViewSet)
+router.register(r'clientes', ClienteViewSet)
 router.register(r'marcas', MarcaViewSet)
 router.register(r'caja', CajaViewSet, basename='caja')
 router.register(r'caja-movimientos', MovimientoDeCajaViewSet, basename='caja-movimientos')
+router.register(r'ventas', VentaViewSet, basename='ventas')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

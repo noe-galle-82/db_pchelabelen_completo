@@ -53,7 +53,12 @@ class CajaViewSet(viewsets.ModelViewSet):
 		empleado = self.get_empleado(request.user)
 		if Caja.objects.filter(usuario=request.user, estado='ABIERTA').exists():
 			return Response({"detail": "Ya hay una sesión de caja abierta para este usuario."}, status=409)
-		opening_amount = request.data.get('opening_amount') or request.data.get('monto_inicial')
+		# Aceptar snake y camelCase
+		opening_amount = (
+			request.data.get('opening_amount')
+			or request.data.get('openingAmount')
+			or request.data.get('monto_inicial')
+		)
 		if opening_amount is None:
 			return Response({"detail": "opening_amount es requerido"}, status=400)
 		caja = Caja.objects.create(
@@ -73,7 +78,12 @@ class CajaViewSet(viewsets.ModelViewSet):
 		caja = Caja.objects.filter(usuario=request.user, estado='ABIERTA').first()
 		if not caja:
 			return Response({"detail": "No hay sesión abierta"}, status=409)
-		counted = request.data.get('counted_amount') or request.data.get('closing_counted_amount')
+		# Aceptar snake y camelCase
+		counted = (
+			request.data.get('counted_amount')
+			or request.data.get('countedAmount')
+			or request.data.get('closing_counted_amount')
+		)
 		if counted is None:
 			return Response({"detail": "counted_amount es requerido"}, status=400)
 		# Calcular saldo del sistema
@@ -203,6 +213,13 @@ class MovimientoDeCajaViewSet(viewsets.ModelViewSet):
 		# Resolver instancia FK
 		tm_obj = TipoMovimiento.objects.filter(id=id_tipo_movimiento).first()
 
+		# Normalizar claves de referencia y origen desde camelCase (antes de deducir tipo)
+		ref_type = self.request.data.get('ref_type') or self.request.data.get('refType')
+		ref_id = self.request.data.get('ref_id') or self.request.data.get('refId')
+		origen = self.request.data.get('origen') or self.request.data.get('origin')
+		if isinstance(origen, str):
+			origen = origen.upper()
+
 		# Determinar tipo efectivo: usa 'tipo' si viene, sino deriva de 'tipo_movimiento'
 		tipo = self.request.data.get('tipo')
 		if not tipo and isinstance(tipo_movimiento, str):
@@ -210,14 +227,15 @@ class MovimientoDeCajaViewSet(viewsets.ModelViewSet):
 		# Intento de deducción por origen/ref_type si aún no hay tipo
 		if not tipo:
 			if isinstance(origen, str):
-				if origen.upper() == 'COMPRA':
+				if origen == 'COMPRA':
 					tipo = 'EGRESO'
-				elif origen.upper() == 'VENTA':
+				elif origen == 'VENTA':
 					tipo = 'INGRESO'
 			elif isinstance(ref_type, str):
-				if ref_type.lower() == 'compra':
+				low = ref_type.lower()
+				if low == 'compra':
 					tipo = 'EGRESO'
-				elif ref_type.lower() == 'venta':
+				elif low == 'venta':
 					tipo = 'INGRESO'
 		allowed_tipos = {'INGRESO','EGRESO','AJUSTE','REVERSO'}
 		if tipo and tipo.upper() not in allowed_tipos:
@@ -227,13 +245,6 @@ class MovimientoDeCajaViewSet(viewsets.ModelViewSet):
 		ajuste_sign = self.request.data.get('ajuste_sign')
 		if tipo == 'AJUSTE' and ajuste_sign not in ('IN', 'OUT'):
 			raise serializers.ValidationError({"detail": "ajuste_sign requerido: IN|OUT para tipo=AJUSTE"})
-
-		# Normalizar claves de referencia y origen desde camelCase
-		ref_type = self.request.data.get('ref_type') or self.request.data.get('refType')
-		ref_id = self.request.data.get('ref_id') or self.request.data.get('refId')
-		origen = self.request.data.get('origen') or self.request.data.get('origen') or self.request.data.get('origin')
-		if isinstance(origen, str):
-			origen = origen.upper()
 		# Construir kwargs evitando pasar tipo=None (que rompe default del modelo)
 		kwargs = dict(
 			caja=caja,
