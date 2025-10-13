@@ -4,8 +4,17 @@ djangorestframework==3.16.1
 djangorestframework-simplejwt==5.3.0
 django-cors-headers==4.3.1
 django-rest-passwordreset==1.5.0
+django-filter==25.2
+
+# Config / Email
 python-decouple==3.8
 sendgrid==6.12.5
+
+# Base de datos (MySQL)
 mysqlclient==2.2.7
+
+# Soporte de zona horaria (Windows)
 tzdata==2025.2
-django-filter==24.3
+
+# Requerido por ImageField (productos con imagen)
+Pillow==11.3.0
