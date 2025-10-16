@@ -4,6 +4,6 @@ from .models import Clientes
 
 @admin.register(Clientes)
 class ClientesAdmin(admin.ModelAdmin):
-	list_display = ("usuario", "nombre_completo", "email", "teléfono", "dni", "condicion_iva", "activo")
-	search_fields = ("nombre_completo", "email", "dni")
-	list_filter = ("condicion_iva", "activo")
+    list_display = ("nombre_completo", "email", "teléfono", "dni", "condicion_iva", "activo")
+    search_fields = ("nombre_completo", "email", "dni")
+    list_filter = ("condicion_iva", "activo")

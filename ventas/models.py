@@ -10,12 +10,10 @@ from lotes.models import Lote
 # MODELO VENTA (Basado en tu DER)
 # ==========================================================
 class Venta(models.Model):
-    # La Venta debe referenciar a la CAJA abierta (movimientos_caja)
-    caja = models.ForeignKey(Caja, on_delete=models.PROTECT) 
-    # La Venta debe referenciar al EMPLEADO que la realiza (core)
-    empleado = models.ForeignKey(EmpleadoProfile, on_delete=models.PROTECT, null=True, blank=True) 
-    # Cliente (opcional: consumidor final)
-    cliente = models.ForeignKey(Clientes, on_delete=models.PROTECT, null=True, blank=True)
+    caja = models.ForeignKey(Caja, on_delete=models.PROTECT)
+    empleado = models.ForeignKey(EmpleadoProfile, on_delete=models.PROTECT, null=True, blank=True)
+    # Cliente ahora apunta a Clientes.id (autoincremental)
+    cliente = models.ForeignKey('clientes.Clientes', on_delete=models.PROTECT, null=True, blank=True)
     # Medio de pago (texto alineado con caja)
     medio_pago = models.CharField(max_length=20)
     # Número correlativo simple (opcional)
