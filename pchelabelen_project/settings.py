@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-from decouple import config
+from decouple import config # type: ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -98,7 +98,7 @@ WSGI_APPLICATION = 'pchelabelen_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', # Indica que usaremos MySQL
-        'NAME': 'pchela_db',              # Nombre de la DB que creaste
+        'NAME': config('DB_NAME'),              # Nombre de la DB que creaste
         'USER': 'root',           # Tu usuario de MySQL (e.g., 'root' o 'user_django')
         'PASSWORD': 'root',    # Tu contraseña de MySQL
         'HOST': 'localhost',                  # Dirección donde corre MySQL
