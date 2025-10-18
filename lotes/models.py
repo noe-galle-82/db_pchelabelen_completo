@@ -21,6 +21,7 @@ class Lote(models.Model):
     proveedor = models.ForeignKey(Proveedores, on_delete=models.PROTECT, null=True, blank=True)
     notas = models.TextField(blank=True, null=True)
     creado = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-creado']
