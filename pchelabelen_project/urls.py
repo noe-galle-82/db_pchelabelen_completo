@@ -33,6 +33,7 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/me/", me, name="me"),
     path("api/users/", get_users, name="get_users"),
+    path('', include('core.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,3 +1,4 @@
+
 from django.contrib.auth.models import User, Group
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated
@@ -9,9 +10,10 @@ from rest_framework import parsers
 from .models import Producto
 from lotes.models import Lote
 from lotes.serializers import LoteSerializer
-
 from .serializers import ProductoSerializer
 from .serializers import UserSerializer
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -129,6 +131,12 @@ class ProductoViewSet(viewsets.ModelViewSet):
             'message': f'Productos con menos de {umbral} unidades',
             'data': serializer.data
         })
+
+
+# Endpoint de salud para /api/ping/
+@csrf_exempt
+def ping(request):
+    return JsonResponse({"status": "ok"}, status=200)
 
     @action(detail=True, methods=['patch'])
     def actualizar_stock(self, request, pk=None):
