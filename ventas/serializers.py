@@ -1,6 +1,14 @@
+
 from rest_framework import serializers
 from .models import Venta, DetalleVenta
 from clientes.models import Clientes
+
+
+class LoteAsignadoSerializer(serializers.Serializer):
+    lote_id = serializers.IntegerField()
+    cantidad = serializers.IntegerField(min_value=1)
+    precio_unitario = serializers.DecimalField(max_digits=12, decimal_places=2)
+    descuento_por_item = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, default=0)
 
 
 class DetalleVentaSerializer(serializers.ModelSerializer):
@@ -23,7 +31,7 @@ class VentaSerializer(serializers.ModelSerializer):
         if not obj.cliente:
             return None
         return {
-            'id': obj.cliente.usuario_id,
+            'id': obj.cliente.id,
             'nombre_completo': obj.cliente.nombre_completo,
             'email': obj.cliente.email,
         }
@@ -36,26 +44,12 @@ class VentaSerializer(serializers.ModelSerializer):
 
 class VentaItemInputSerializer(serializers.Serializer):
     # Soporta snake y camelCase
-    producto_id = serializers.IntegerField(required=False)
-    productoId = serializers.IntegerField(required=False)
-    lote_id = serializers.IntegerField(required=False, allow_null=True)
-    loteId = serializers.IntegerField(required=False, allow_null=True)
-    cantidad = serializers.IntegerField(min_value=1)
-    precio_unitario = serializers.DecimalField(max_digits=12, decimal_places=2, required=False)
-    precioUnitario = serializers.DecimalField(max_digits=12, decimal_places=2, required=False)
-    descuento_por_item = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
-    descuentoPorItem = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
+    producto_id = serializers.IntegerField(required=True)
+    lotes_asignados = LoteAsignadoSerializer(many=True, required=True)
 
     def validate(self, attrs):
-        # Normalizar a snake_case
-        if 'producto_id' not in attrs and 'productoId' in attrs:
-            attrs['producto_id'] = attrs.pop('productoId')
-        if 'lote_id' not in attrs and 'loteId' in attrs:
-            attrs['lote_id'] = attrs.pop('loteId')
-        if 'precio_unitario' not in attrs and 'precioUnitario' in attrs:
-            attrs['precio_unitario'] = attrs.pop('precioUnitario')
-        if 'descuento_por_item' not in attrs and 'descuentoPorItem' in attrs:
-            attrs['descuento_por_item'] = attrs.pop('descuentoPorItem')
+        if not attrs.get('lotes_asignados'):
+            raise serializers.ValidationError({'lotes_asignados': 'Debe ser una lista de lotes asignados y no puede estar vacía'})
         return attrs
 
 

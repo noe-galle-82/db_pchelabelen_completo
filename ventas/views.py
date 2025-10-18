@@ -52,7 +52,7 @@ class VentaViewSet(viewsets.GenericViewSet):
 		cliente = None
 		cliente_id = payload.get('cliente_id')
 		if cliente_id:
-			cliente = Clientes.objects.filter(usuario_id=cliente_id).first()
+			cliente = Clientes.objects.filter(id=cliente_id).first()
 
 		# Calcular totales y validar stock
 		items = payload['items']
@@ -69,30 +69,26 @@ class VentaViewSet(viewsets.GenericViewSet):
 			monto_total=Decimal('0.00'),
 		)
 
+
 		for it in items:
 			producto = Producto.objects.get(id=it['producto_id'])
-			cantidad_restante = int(it['cantidad'])
-			precio_unitario = Decimal(str(it['precio_unitario']))
-			desc = Decimal(str(it.get('descuento_por_item') or '0'))
-
-			# Si viene lote_id, usarlo; si no, FIFO por fecha_compra asc
-			if it.get('lote_id'):
-				lotes = [Lote.objects.select_for_update().get(id=it['lote_id'])]
-			else:
-				lotes = list(Lote.objects.select_for_update().filter(producto=producto, cantidad_disponible__gt=0).order_by('fecha_compra', 'id'))
-
-			for lote in lotes:
-				if cantidad_restante <= 0:
-					break
-				usar = min(cantidad_restante, lote.cantidad_disponible)
-				if usar <= 0:
-					continue
-				subtotal = (precio_unitario - desc) * Decimal(usar)
+			lotes_asignados = it.get('lotes_asignados', [])
+			if not lotes_asignados:
+				raise serializers.ValidationError({"detail": f"No se especificaron lotes para el producto {producto.id}"})
+			for lote_info in lotes_asignados:
+				lote_id = lote_info['lote_id']
+				cantidad = int(lote_info['cantidad'])
+				precio_unitario = Decimal(str(lote_info['precio_unitario']))
+				desc = Decimal(str(lote_info.get('descuento_por_item') or '0'))
+				lote = Lote.objects.select_for_update().get(id=lote_id)
+				if lote.cantidad_disponible < cantidad:
+					raise serializers.ValidationError({"detail": f"Stock insuficiente en lote {lote_id} para producto {producto.id}"})
+				subtotal = (precio_unitario - desc) * Decimal(cantidad)
 				detalle = DetalleVenta.objects.create(
 					id_venta=venta,
 					id_producto=producto,
 					id_lote=lote,
-					cantidad=usar,
+					cantidad=cantidad,
 					precio_unitario=precio_unitario,
 					descuento_por_item=desc if desc > 0 else None,
 					subtotal=subtotal,
@@ -100,12 +96,10 @@ class VentaViewSet(viewsets.GenericViewSet):
 				detalles_creados.append(detalle)
 				total += subtotal
 				# descontar stock
-				lote.cantidad_disponible -= usar
-				lote.save(update_fields=['cantidad_disponible'])
-				cantidad_restante -= usar
-
-			if cantidad_restante > 0:
-				raise serializers.ValidationError({"detail": f"Stock insuficiente para producto {producto.id}"})
+				lote.cantidad_disponible -= cantidad
+				if lote.cantidad_disponible <= 0:
+					lote.activo = False
+				lote.save(update_fields=['cantidad_disponible', 'activo'])
 
 		# Actualizar total de venta
 		venta.monto_total = total
