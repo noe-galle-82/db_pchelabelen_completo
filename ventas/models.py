@@ -11,7 +11,7 @@ from lotes.models import Lote
 # ==========================================================
 class Venta(models.Model):
     caja = models.ForeignKey(Caja, on_delete=models.PROTECT)
-    empleado = models.ForeignKey(EmpleadoProfile, on_delete=models.PROTECT, null=True, blank=True)
+    empleado = models.ForeignKey(EmpleadoProfile, on_delete=models.PROTECT)
     # Cliente ahora apunta a Clientes.id (autoincremental)
     cliente = models.ForeignKey('clientes.Clientes', on_delete=models.PROTECT, null=True, blank=True)
     # Medio de pago (texto alineado con caja)

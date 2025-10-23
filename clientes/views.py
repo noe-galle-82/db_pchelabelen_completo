@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 
 class ClienteViewSet(viewsets.ModelViewSet):
-	queryset = Clientes.objects.all().order_by('nombre_completo')
+	queryset = Clientes.objects.all().order_by('apellido', 'nombre')
 	serializer_class = ClienteSerializer
 	permission_classes = [IsAuthenticated]
 	filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -22,6 +22,24 @@ class ClienteViewSet(viewsets.ModelViewSet):
 		self.perform_create(serializer)
 		headers = self.get_success_headers(serializer.data)
 		return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+	def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		if instance.id == 1:
+			return Response({"detail": "No se puede modificar el cliente Venta Rápida."}, status=status.HTTP_403_FORBIDDEN)
+		return super().update(request, *args, **kwargs)
+
+	def partial_update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		if instance.id == 1:
+			return Response({"detail": "No se puede modificar el cliente Venta Rápida."}, status=status.HTTP_403_FORBIDDEN)
+		return super().partial_update(request, *args, **kwargs)
+
+	def destroy(self, request, *args, **kwargs):
+		instance = self.get_object()
+		if instance.id == 1:
+			return Response({"detail": "No se puede eliminar el cliente Venta Rápida."}, status=status.HTTP_403_FORBIDDEN)
+		return super().destroy(request, *args, **kwargs)
 
 	@action(detail=False, methods=['get'], url_path='unique-check')
 	def unique_check(self, request):

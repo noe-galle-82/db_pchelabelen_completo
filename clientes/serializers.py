@@ -5,15 +5,17 @@ from .models import Clientes
 from django.contrib.auth.models import User
 
 
+
 class ClienteSerializer(serializers.ModelSerializer):
-    telefono = serializers.CharField(source='teléfono', allow_blank=True, allow_null=True, required=False)
+    telefono = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     condicion_iva = serializers.ChoiceField(choices=Clientes.CONDICION_IVA, required=False, allow_null=True)
 
     class Meta:
         model = Clientes
         fields = [
             'id',
-            'nombre_completo',
+            'nombre',
+            'apellido',
             'email',
             'telefono',
             'direccion',
@@ -27,7 +29,8 @@ class ClienteSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'email': { 'required': False, 'allow_null': True, 'allow_blank': False },
-            'nombre_completo': { 'required': True },
+            'nombre': { 'required': True },
+            'apellido': { 'required': True },
             'dni': { 'required': False },
             'fecha_nacimiento': { 'required': False },
             'condicion_iva': { 'required': False },

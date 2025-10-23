@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import User, Group
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated
@@ -12,8 +11,15 @@ from lotes.models import Lote
 from lotes.serializers import LoteSerializer
 from .serializers import ProductoSerializer
 from .serializers import UserSerializer
+from .serializers import EmpleadoCreateSerializer, EmpleadoSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from .models import EmpleadoProfile
+from .models import UserProfile
+from rest_framework.views import APIView
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 # Create your views here.
 
@@ -138,7 +144,27 @@ class ProductoViewSet(viewsets.ModelViewSet):
 def ping(request):
     return JsonResponse({"status": "ok"}, status=200)
 
-    @action(detail=True, methods=['patch'])
+@action(detail=True, methods=['patch'])
+
+# Endpoint para cambio de contraseña
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        if not old_password or not new_password:
+            return Response({'detail': 'Debe proporcionar old_password y new_password.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.check_password(old_password):
+            return Response({'detail': 'La contraseña actual es incorrecta.'}, status=status.HTTP_400_BAD_REQUEST)
+        user.set_password(new_password)
+        user.save()
+        # Resetear el flag must_change_password
+        if hasattr(user, 'profile'):
+            user.profile.must_change_password = False
+            user.profile.save()
+        return Response({'detail': 'Contraseña cambiada correctamente.'}, status=status.HTTP_200_OK)
     def actualizar_stock(self, request, pk=None):
         """Actualizar solo el stock de un producto"""
         producto = self.get_object()
@@ -178,3 +204,27 @@ def ping(request):
             'total_lotes': lotes.count(),
             'data': serializer.data
         })
+
+# ViewSet para operaciones CRUD completas de empleados
+class EmpleadoViewSet(viewsets.ModelViewSet):
+    queryset = EmpleadoProfile.objects.all()
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return EmpleadoSerializer
+        return EmpleadoCreateSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    search_fields = ['user__username', 'user__email', 'numero_empleado']
+    ordering_fields = ['user__username', 'numero_empleado']
+
+class UserProfileDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        from .serializers import UserProfileSerializer
+        try:
+            profile = UserProfile.objects.get(user__id=pk)
+            serializer = UserProfileSerializer(profile)
+            return Response(serializer.data)
+        except UserProfile.DoesNotExist:
+            return Response({'detail': 'No existe el perfil.'}, status=status.HTTP_404_NOT_FOUND)
