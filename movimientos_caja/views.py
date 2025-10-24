@@ -31,16 +31,13 @@ class CajaViewSet(viewsets.ModelViewSet):
 		return user.groups.filter(name__iexact='Gerente').exists()
 
 	def get_queryset(self):
-		qs = super().get_queryset()
-		if self.is_gerente(self.request.user):
-			return qs
-		# Usuarios no gerente: solo sus sesiones
-		return qs.filter(usuario=self.request.user)
+		# Todos los usuarios ven la caja global
+		return super().get_queryset()
 
 	@action(detail=False, methods=['get'])
 	def sesion_abierta(self, request):
-		# Sesión por usuario
-		caja = Caja.objects.filter(usuario=request.user, estado='ABIERTA').first()
+		# Caja global
+		caja = Caja.objects.filter(estado='ABIERTA').first()
 		if not caja:
 			return Response({"open": False}, status=status.HTTP_200_OK)
 		data = self.get_serializer(caja).data
@@ -51,8 +48,8 @@ class CajaViewSet(viewsets.ModelViewSet):
 	@transaction.atomic
 	def abrir(self, request):
 		empleado = self.get_empleado(request.user)
-		if Caja.objects.filter(usuario=request.user, estado='ABIERTA').exists():
-			return Response({"detail": "Ya hay una sesión de caja abierta para este usuario."}, status=409)
+		if Caja.objects.filter(estado='ABIERTA').exists():
+			return Response({"detail": "Ya hay una caja abierta en el sistema."}, status=409)
 		# Aceptar snake y camelCase
 		opening_amount = (
 			request.data.get('opening_amount')

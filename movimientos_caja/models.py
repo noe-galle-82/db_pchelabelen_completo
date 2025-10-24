@@ -8,8 +8,6 @@ from tipo_pago.models import TipoPago # Importamos el modelo
 # 1. MODELO CAJA (Control de Apertura y Cierre - Relación con Roles)
 # ==========================================================
 class Caja(models.Model):
-    # Nuevo: sesión por usuario
-    usuario = models.ForeignKey(User, on_delete=models.PROTECT, related_name='cajas', null=True, blank=True)
     empleado_apertura = models.ForeignKey(
         EmpleadoProfile, 
         related_name='cajas_abiertas', 
@@ -100,7 +98,7 @@ class Caja(models.Model):
 
 
 # ==========================================================
-# 2. MODELO MOVIMIENTOS_DE_CAJA (Transacciones - Basado en tu DER)
+# 2. MODELO MOVIMIENTOS_DE_CAJA (Transacciones - Basado en el DER)
 # ==========================================================
 class MovimientoDeCaja(models.Model):
     # Referencia obligatoria a la CAJA que está abierta
