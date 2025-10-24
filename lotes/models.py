@@ -6,6 +6,7 @@ from proveedores.models import Proveedores
 
 class Lote(models.Model):
     producto = models.ForeignKey(Producto, related_name='lotes', on_delete=models.CASCADE)
+    compra = models.ForeignKey('compras.Compras', on_delete=models.CASCADE, related_name='lotes', null=True, blank=True, help_text='Compra asociada a este lote')
     numero_lote = models.CharField(max_length=50, blank=True, null=True)
     cantidad_inicial = models.PositiveIntegerField()
     cantidad_disponible = models.PositiveIntegerField()

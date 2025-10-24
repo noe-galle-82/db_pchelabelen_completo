@@ -35,6 +35,7 @@ urlpatterns = [
     path("api/me/", me, name="me"),
     path("api/users/", get_users, name="get_users"),
     path('', include('core.urls')),
+    path('', include('compras.urls')),
 ]
 
 if settings.DEBUG:

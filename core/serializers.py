@@ -8,6 +8,11 @@ from marcas.serializers import MarcaSerializer
 from productos.models import Categoria
 from django.db import transaction
 from django.core.mail import send_mail
+from django.contrib.auth.models import User, Group
+from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+import random
+import string
 import random
 import string
 
@@ -45,17 +50,6 @@ class EmpleadoSerializer(serializers.ModelSerializer):
     def get_role(self, obj):
         groups = obj.user.groups.all()
         return groups[0].name if groups else None
-from django.contrib.auth.models import User, Group
-from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
-from .models import Producto, EmpleadoProfile, UserProfile
-from marcas.models import Marca
-from marcas.serializers import MarcaSerializer
-from productos.models import Categoria
-from django.db import transaction
-from django.core.mail import send_mail
-import random
-import string
 
 
 class UserSerializer(ModelSerializer):
