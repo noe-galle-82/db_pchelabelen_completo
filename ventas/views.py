@@ -25,7 +25,7 @@ class VentaViewSet(viewsets.GenericViewSet):
 			return None
 
 	def get_open_caja(self, user):
-		return Caja.objects.filter(usuario=user, estado='ABIERTA').first()
+		return Caja.objects.filter(estado='ABIERTA').first()
 
 	@transaction.atomic
 	def create(self, request):

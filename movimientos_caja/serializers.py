@@ -12,12 +12,12 @@ class CajaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Caja
         fields = [
-            'id', 'usuario', 'empleado_apertura', 'fecha_apertura', 'monto_inicial',
+            'id', 'empleado_apertura', 'fecha_apertura', 'monto_inicial',
             'empleado_cierre', 'fecha_cierre', 'estado',
             'closing_counted_amount', 'closing_system_amount', 'difference_amount',
             'notas', 'saldo_actual', 'saldo_total', 'saldo_efectivo'
         ]
-        read_only_fields = ['id', 'usuario', 'fecha_apertura', 'empleado_cierre', 'fecha_cierre', 'estado', 'saldo_actual']
+        read_only_fields = ['id', 'fecha_apertura', 'empleado_cierre', 'fecha_cierre', 'estado', 'saldo_actual']
 
 
 class MovimientoDeCajaSerializer(serializers.ModelSerializer):

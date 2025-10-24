@@ -32,7 +32,7 @@ class VentaSerializer(serializers.ModelSerializer):
             return None
         return {
             'id': obj.cliente.id,
-            'nombre_completo': obj.cliente.nombre_completo,
+            'nombre_completo': f"{obj.cliente.nombre} {obj.cliente.apellido}",
             'email': obj.cliente.email,
         }
 

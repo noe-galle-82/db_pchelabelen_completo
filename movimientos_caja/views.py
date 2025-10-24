@@ -60,7 +60,6 @@ class CajaViewSet(viewsets.ModelViewSet):
 			return Response({"detail": "opening_amount es requerido"}, status=400)
 		caja = Caja.objects.create(
 			empleado_apertura=empleado,
-			usuario=request.user,
 			monto_inicial=opening_amount,
 			estado='ABIERTA'
 		)
@@ -72,7 +71,7 @@ class CajaViewSet(viewsets.ModelViewSet):
 	@transaction.atomic
 	def cerrar(self, request):
 		empleado = self.get_empleado(request.user)
-		caja = Caja.objects.filter(usuario=request.user, estado='ABIERTA').first()
+		caja = Caja.objects.filter(estado='ABIERTA').first()
 		if not caja:
 			return Response({"detail": "No hay sesión abierta"}, status=409)
 		# Aceptar snake y camelCase
@@ -152,36 +151,24 @@ class MovimientoDeCajaViewSet(viewsets.ModelViewSet):
 
 	def get_queryset(self):
 		qs = super().get_queryset().select_related('caja')
-		if self.is_gerente(self.request.user):
-			return qs
-		return qs.filter(caja__usuario=self.request.user)
+		return qs
 
 	def list(self, request, *args, **kwargs):
-		# Si no es gerente y pide una caja que no es suya, 403
-		caja_id = request.query_params.get('caja')
-		if caja_id and not self.is_gerente(request.user):
-			try:
-				caja = Caja.objects.get(id=caja_id)
-				if caja.usuario_id != request.user.id:
-					return Response({"detail": "No tenés permisos para ver estos movimientos"}, status=status.HTTP_403_FORBIDDEN)
-			except Caja.DoesNotExist:
-				pass  # devolverá lista vacía de todas formas
+		# Caja global, todos pueden ver movimientos
 		return super().list(request, *args, **kwargs)
 
 	def perform_create(self, serializer):
 		empleado = self.get_empleado(self.request.user)
-		# Opción C: permitir omitir "caja" y tomar la sesión abierta del usuario
+		# Opción C: permitir omitir "caja" y tomar la sesión abierta global
 		caja_id = self.request.data.get('caja')
 		caja = None
 		if caja_id:
 			caja = Caja.objects.filter(id=caja_id).first()
 		else:
-			caja = Caja.objects.filter(usuario=self.request.user, estado='ABIERTA').first()
+			caja = Caja.objects.filter(estado='ABIERTA').first()
 		if not caja:
 			raise serializers.ValidationError({"detail": "No hay sesión abierta para registrar movimientos"})
-		# Seguridad: si no es gerente, solo puede registrar en su propia caja
-		if (not self.is_gerente(self.request.user)) and caja.usuario_id != self.request.user.id:
-			raise serializers.ValidationError({"detail": "No tenés permisos para registrar en esta caja"})
+		# Seguridad: caja global, todos pueden registrar movimientos
 
 		# Opción A: aceptar strings en medio_pago y tipo_movimiento (aceptar camelCase)
 		medio_pago = self.request.data.get('medio_pago') or self.request.data.get('medioPago')
