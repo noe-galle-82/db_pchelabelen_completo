@@ -13,8 +13,8 @@ class ClienteViewSet(viewsets.ModelViewSet):
 	permission_classes = [IsAuthenticated]
 	filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 	filterset_fields = ['email', 'dni', 'activo', 'condicion_iva']
-	search_fields = ['nombre_completo', 'email', 'dni']
-	ordering_fields = ['nombre_completo', 'email', 'dni']
+	search_fields = ['nombre', 'apellido', 'email', 'dni']
+	ordering_fields = ['nombre', 'apellido', 'email', 'dni']
 
 	def create(self, request, *args, **kwargs):
 		serializer = self.get_serializer(data=request.data)
