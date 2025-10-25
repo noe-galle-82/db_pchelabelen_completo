@@ -66,7 +66,7 @@ class VentaCreateSerializer(serializers.Serializer):
 
     def validate_medio_pago(self, value):
         v = (value or '').strip().upper()
-        allowed = {'EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'CREDITO'}
+        allowed = {'EFECTIVO', 'TRANSFERENCIA'}
         if v not in allowed:
             raise serializers.ValidationError('medio_pago inválido')
         return v

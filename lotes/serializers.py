@@ -10,7 +10,7 @@ class LoteSerializer(serializers.ModelSerializer):
         fields = [
             'id','producto','producto_nombre','numero_lote','cantidad_inicial','cantidad_disponible',
             'costo_unitario','descuento_tipo','descuento_valor','costo_unitario_final',
-            'fecha_compra','fecha_vencimiento','proveedor','notas','creado'
+            'fecha_compra','fecha_vencimiento','notas','creado'
         ]
         read_only_fields = ['id','creado','costo_unitario_final']
     

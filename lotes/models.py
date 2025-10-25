@@ -19,7 +19,6 @@ class Lote(models.Model):
     descuento_valor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     fecha_compra = models.DateField(auto_now_add=True)
     fecha_vencimiento = models.DateField(null=True, blank=True)
-    proveedor = models.ForeignKey(Proveedores, on_delete=models.PROTECT, null=True, blank=True)
     notas = models.TextField(blank=True, null=True)
     creado = models.DateTimeField(auto_now_add=True)
     activo = models.BooleanField(default=True)

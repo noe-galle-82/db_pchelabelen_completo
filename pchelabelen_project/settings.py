@@ -44,8 +44,6 @@ INSTALLED_APPS = [
     'clientes',
     'ventas',
     'compras',
-    'detalles_venta',
-    'detalles_compra',
     'lotes',
     'marcas',
     'movimientos_caja',
