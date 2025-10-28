@@ -13,7 +13,8 @@ class ClienteSerializer(serializers.ModelSerializer):
         model = Clientes
         fields = [
             'id',
-            'nombre_completo',
+            'nombre',
+            'apellido',
             'email',
             'telefono',
             'direccion',
@@ -27,7 +28,8 @@ class ClienteSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             'email': { 'required': False, 'allow_null': True, 'allow_blank': False },
-            'nombre_completo': { 'required': True },
+            'nombre': { 'required': True },
+            'apellido': { 'required': True },
             'dni': { 'required': False },
             'fecha_nacimiento': { 'required': False },
             'condicion_iva': { 'required': False },
