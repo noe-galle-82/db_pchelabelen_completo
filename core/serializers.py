@@ -186,44 +186,47 @@ class EmpleadoCreateSerializer(serializers.ModelSerializer):
             'email': {'required': True},
         }
 
-        def validate_email(self, value):
-            if EmpleadoProfile.objects.filter(email=value).exists() or User.objects.filter(email=value).exists():
-                raise serializers.ValidationError("El email ya está registrado para otro empleado o usuario.")
-            return value
+    def validate_email(self, value):
+        if EmpleadoProfile.objects.filter(email=value).exists() or User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("El email ya está registrado para otro empleado o usuario.")
+        return value
 
-        def validate_dni(self, value):
-            qs = EmpleadoProfile.objects.filter(dni=value)
-            if self.instance:
-                qs = qs.exclude(pk=self.instance.pk)
-            if qs.exists():
-                raise serializers.ValidationError("El DNI ya está registrado para otro empleado.")
-            return value
+    def validate_dni(self, value):
+        qs = EmpleadoProfile.objects.filter(dni=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("El DNI ya está registrado para otro empleado.")
+        return value
 
-        def create(self, validated_data):
-            nombre = validated_data.get('nombre')
-            apellido = validated_data.get('apellido')
-            email = validated_data.pop('email')
-            password = validated_data.pop('password', None)
-            role = validated_data.pop('role')
-            base_username = f"{nombre}.{apellido}".lower().replace(' ', '')
-            username = base_username
-            i = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{i}"
-                i += 1
-            if not password:
-                password = self.generate_password()
-            with transaction.atomic():
-                user = User.objects.create_user(username=username, email=email, password=password)
-                # Forzar must_change_password en el perfil del usuario
-                if hasattr(user, 'profile'):
-                    user.profile.must_change_password = True
-                    user.profile.save()
-                if role:
-                    group, _ = Group.objects.get_or_create(name=role)
-                    user.groups.add(group)
-                empleado = EmpleadoProfile.objects.create(user=user, email=email, nombre=nombre, apellido=apellido, **validated_data)
-            return empleado
+    def create(self, validated_data):
+        nombre = validated_data.get('nombre')
+        apellido = validated_data.get('apellido')
+        email = validated_data.pop('email')
+        password = validated_data.pop('password', None)
+        role = validated_data.pop('role')
+        base_username = f"{nombre}.{apellido}".lower().replace(' ', '')
+        username = base_username
+        i = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{i}"
+            i += 1
+        if not password:
+            password = self.generate_password()
+        # Validar email antes de crear usuario (por si el método no se llama automáticamente)
+        if EmpleadoProfile.objects.filter(email=email).exists() or User.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"email": "El email ya está registrado para otro empleado o usuario."})
+        with transaction.atomic():
+            user = User.objects.create_user(username=username, email=email, password=password)
+            # Forzar must_change_password en el perfil del usuario
+            if hasattr(user, 'profile'):
+                user.profile.must_change_password = True
+                user.profile.save()
+            if role:
+                group, _ = Group.objects.get_or_create(name=role)
+                user.groups.add(group)
+            empleado = EmpleadoProfile.objects.create(user=user, email=email, nombre=nombre, apellido=apellido, **validated_data)
+        return empleado
         
     def create(self, validated_data):
         nombre = validated_data.pop('nombre', None)

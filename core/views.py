@@ -207,6 +207,10 @@ class ChangePasswordView(APIView):
 
 # ViewSet para operaciones CRUD completas de empleados
 class EmpleadoViewSet(viewsets.ModelViewSet):
+    def generate_password(self, length=10):
+        import string, random
+        chars = string.ascii_letters + string.digits
+        return ''.join(random.choice(chars) for _ in range(length))
     queryset = EmpleadoProfile.objects.all()
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -214,8 +218,35 @@ class EmpleadoViewSet(viewsets.ModelViewSet):
         return EmpleadoCreateSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['user__email']  # Permite filtrar por email
     search_fields = ['user__username', 'user__email', 'numero_empleado']
     ordering_fields = ['user__username', 'numero_empleado']
+
+    @action(detail=True, methods=['post'], url_path='reenviar-credenciales')
+    def reenviar_credenciales(self, request, pk=None):
+        """Reenvía el correo de credenciales al empleado por su ID"""
+        try:
+            empleado = self.get_object()
+            user = empleado.user
+            email = user.email
+            nombre = empleado.nombre
+            apellido = empleado.apellido
+            username = user.username
+            # Generar una nueva contraseña temporal igual que al crear el empleado
+            nueva_password = self.generate_password()
+            user.set_password(nueva_password)
+            user.save()
+            # Actualizar el flag must_change_password si existe
+            if hasattr(user, 'profile'):
+                user.profile.must_change_password = True
+                user.profile.save()
+            subject = 'Bienvenido a PCHELABELEN - Credenciales de acceso'
+            message = f"Hola {nombre},\n\nTu usuario ha sido creado en el sistema.\n\nUsuario: {username}\nContraseña temporal: {nueva_password}\n\nPor seguridad, deberás cambiar la contraseña al iniciar sesión por primera vez.\n\nSaludos."
+            from django.core.mail import send_mail
+            send_mail(subject, message, None, [email], fail_silently=True)
+            return Response({'detail': 'Correo de credenciales reenviado correctamente.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': f'Error al reenviar el correo: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileDetail(APIView):
     permission_classes = [IsAuthenticated]
