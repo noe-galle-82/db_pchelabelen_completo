@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Lote
 
 class LoteSerializer(serializers.ModelSerializer):
+    proveedor = serializers.SerializerMethodField()
     costo_unitario_final = serializers.SerializerMethodField()
     producto_nombre = serializers.CharField(source='producto.nombre', read_only=True)
 
@@ -10,8 +11,15 @@ class LoteSerializer(serializers.ModelSerializer):
         fields = [
             'id','producto','producto_nombre','numero_lote','cantidad_inicial','cantidad_disponible',
             'costo_unitario','descuento_tipo','descuento_valor','costo_unitario_final',
-            'fecha_compra','fecha_vencimiento','notas','creado'
+            'fecha_compra','fecha_vencimiento','notas','creado','proveedor'
         ]
+    def get_proveedor(self, obj):
+        if obj.compra and hasattr(obj.compra, 'id_proveedor') and obj.compra.id_proveedor:
+            return {
+                'id': obj.compra.id_proveedor.id,
+                'nombre': obj.compra.id_proveedor.nombre
+            }
+        return None
         read_only_fields = ['id','creado','costo_unitario_final']
     
     def get_costo_unitario_final(self, obj):

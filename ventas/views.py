@@ -83,7 +83,7 @@ class VentaViewSet(viewsets.GenericViewSet):
 				lote = Lote.objects.select_for_update().get(id=lote_id)
 				if lote.cantidad_disponible < cantidad:
 					raise serializers.ValidationError({"detail": f"Stock insuficiente en lote {lote_id} para producto {producto.id}"})
-				subtotal = (precio_unitario - desc) * Decimal(cantidad)
+				subtotal = precio_unitario * Decimal(cantidad) * (Decimal('1.0') - desc / Decimal('100'))
 				detalle = DetalleVenta.objects.create(
 					id_venta=venta,
 					id_producto=producto,
