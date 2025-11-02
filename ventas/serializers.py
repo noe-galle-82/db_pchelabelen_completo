@@ -1,5 +1,6 @@
 
 from rest_framework import serializers
+from decimal import Decimal
 from .models import Venta, DetalleVenta
 from clientes.models import Clientes
 
@@ -22,10 +23,20 @@ class VentaSerializer(serializers.ModelSerializer):
     fecha = serializers.DateTimeField(source='fecha_venta', read_only=True)
     cliente = serializers.SerializerMethodField()
     movimiento_caja = serializers.SerializerMethodField()
+    # Campos financieros opcionales
+    numero = serializers.CharField(read_only=True)
+    bruto = serializers.SerializerMethodField()
+    descuento_total = serializers.SerializerMethodField()
+    recargo_total = serializers.SerializerMethodField()
+    impuestos_total = serializers.SerializerMethodField()
 
     class Meta:
         model = Venta
-        fields = ['id', 'numero', 'fecha', 'cliente', 'medio_pago', 'notas', 'monto_total', 'detalles', 'movimiento_caja']
+        fields = [
+            'id', 'numero', 'fecha', 'cliente', 'medio_pago', 'notas',
+            'monto_total', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total',
+            'detalles', 'movimiento_caja'
+        ]
 
     def get_cliente(self, obj):
         if not obj.cliente:
@@ -41,17 +52,49 @@ class VentaSerializer(serializers.ModelSerializer):
         mc = self.context.get('movimiento_caja')
         return mc
 
+    def _acum_financiero(self, obj):
+        bruto_sum = Decimal('0.00')
+        desc_sum = Decimal('0.00')
+        for det in obj.detalles.all():
+            lb = det.precio_unitario * det.cantidad
+            bruto_sum += lb
+            desc_sum += (lb - det.subtotal)
+        return bruto_sum, desc_sum
+
+    def get_bruto(self, obj):
+        from decimal import Decimal
+        bruto_sum, _ = self._acum_financiero(obj)
+        return None if bruto_sum == Decimal('0.00') else bruto_sum
+
+    def get_descuento_total(self, obj):
+        from decimal import Decimal
+        _, desc_sum = self._acum_financiero(obj)
+        return None if desc_sum == Decimal('0.00') else desc_sum
+
+    def get_recargo_total(self, obj):
+        # No se gestiona en el modelo; devolver None para que el front lo trate como opcional
+        return None
+
+    def get_impuestos_total(self, obj):
+        # No se gestiona en el modelo; devolver None para que el front lo trate como opcional
+        return None
+
 
 class VentaListSerializer(serializers.ModelSerializer):
     fecha = serializers.DateTimeField(source='fecha_venta', read_only=True)
-    total = serializers.DecimalField(source='monto_total', max_digits=12, decimal_places=2, read_only=True)
+    total = serializers.DecimalField(source='monto_total', max_digits=12, decimal_places=2, read_only=True, coerce_to_string=False)
     medio_pago = serializers.CharField(read_only=True)
+    numero = serializers.CharField(read_only=True)
     cliente_nombre = serializers.SerializerMethodField()
     items = serializers.SerializerMethodField()
+    bruto = serializers.SerializerMethodField()
+    descuento_total = serializers.SerializerMethodField()
+    recargo_total = serializers.SerializerMethodField()
+    impuestos_total = serializers.SerializerMethodField()
 
     class Meta:
         model = Venta
-        fields = ['id', 'fecha', 'total', 'medio_pago', 'cliente_nombre', 'items']
+        fields = ['id', 'fecha', 'total', 'medio_pago', 'numero', 'cliente_nombre', 'items', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total']
 
     def get_cliente_nombre(self, obj):
         if obj.cliente:
@@ -69,8 +112,35 @@ class VentaListSerializer(serializers.ModelSerializer):
             data.append({
                 'producto_nombre': prod_nombre,
                 'cantidad': det.cantidad,
+                'precio_unitario': float(det.precio_unitario) if det.precio_unitario is not None else None,
+                'subtotal': float(det.subtotal) if det.subtotal is not None else None,
             })
         return data
+
+    def _acum_financiero(self, obj):
+        bruto_sum = Decimal('0.00')
+        desc_sum = Decimal('0.00')
+        for det in obj.detalles.all():
+            lb = det.precio_unitario * det.cantidad
+            bruto_sum += lb
+            desc_sum += (lb - det.subtotal)
+        return bruto_sum, desc_sum
+
+    def get_bruto(self, obj):
+        from decimal import Decimal
+        bruto_sum, _ = self._acum_financiero(obj)
+        return None if bruto_sum == Decimal('0.00') else float(bruto_sum)
+
+    def get_descuento_total(self, obj):
+        from decimal import Decimal
+        _, desc_sum = self._acum_financiero(obj)
+        return None if desc_sum == Decimal('0.00') else float(desc_sum)
+
+    def get_recargo_total(self, obj):
+        return None
+
+    def get_impuestos_total(self, obj):
+        return None
 
 
 class VentaItemInputSerializer(serializers.Serializer):
