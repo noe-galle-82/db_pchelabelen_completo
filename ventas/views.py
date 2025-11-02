@@ -17,11 +17,11 @@ from tipo_movimientos.models import TipoMovimiento
 from tipo_pago.models import TipoPago
 
 
-class VentaViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+class VentaViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
 	permission_classes = [IsAuthenticated]
 
 	queryset = (Venta.objects
-				.select_related('cliente')
+				.select_related('cliente', 'empleado')
 				.prefetch_related('detalles__id_producto'))
 
 	filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]

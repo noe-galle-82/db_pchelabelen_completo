@@ -23,6 +23,8 @@ class VentaSerializer(serializers.ModelSerializer):
     fecha = serializers.DateTimeField(source='fecha_venta', read_only=True)
     cliente = serializers.SerializerMethodField()
     movimiento_caja = serializers.SerializerMethodField()
+    empleado_id = serializers.IntegerField(source='empleado.id', read_only=True)
+    empleado_nombre = serializers.SerializerMethodField()
     # Campos financieros opcionales
     numero = serializers.CharField(read_only=True)
     bruto = serializers.SerializerMethodField()
@@ -34,6 +36,7 @@ class VentaSerializer(serializers.ModelSerializer):
         model = Venta
         fields = [
             'id', 'numero', 'fecha', 'cliente', 'medio_pago', 'notas',
+            'empleado_id', 'empleado_nombre',
             'monto_total', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total',
             'detalles', 'movimiento_caja'
         ]
@@ -51,6 +54,14 @@ class VentaSerializer(serializers.ModelSerializer):
         # Este campo se completa en la vista via context (si existe)
         mc = self.context.get('movimiento_caja')
         return mc
+
+    def get_empleado_nombre(self, obj):
+        if not getattr(obj, 'empleado', None):
+            return None
+        nombre = getattr(obj.empleado, 'nombre', '') or ''
+        apellido = getattr(obj.empleado, 'apellido', '') or ''
+        full = f"{nombre} {apellido}".strip()
+        return full or str(obj.empleado)
 
     def _acum_financiero(self, obj):
         bruto_sum = Decimal('0.00')
@@ -86,6 +97,8 @@ class VentaListSerializer(serializers.ModelSerializer):
     medio_pago = serializers.CharField(read_only=True)
     numero = serializers.CharField(read_only=True)
     cliente_nombre = serializers.SerializerMethodField()
+    empleado_id = serializers.IntegerField(source='empleado.id', read_only=True)
+    empleado_nombre = serializers.SerializerMethodField()
     items = serializers.SerializerMethodField()
     bruto = serializers.SerializerMethodField()
     descuento_total = serializers.SerializerMethodField()
@@ -94,7 +107,7 @@ class VentaListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Venta
-        fields = ['id', 'fecha', 'total', 'medio_pago', 'numero', 'cliente_nombre', 'items', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total']
+        fields = ['id', 'fecha', 'total', 'medio_pago', 'numero', 'cliente_nombre', 'empleado_id', 'empleado_nombre', 'items', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total']
 
     def get_cliente_nombre(self, obj):
         if obj.cliente:
@@ -116,6 +129,14 @@ class VentaListSerializer(serializers.ModelSerializer):
                 'subtotal': float(det.subtotal) if det.subtotal is not None else None,
             })
         return data
+
+    def get_empleado_nombre(self, obj):
+        if not getattr(obj, 'empleado', None):
+            return None
+        nombre = getattr(obj.empleado, 'nombre', '') or ''
+        apellido = getattr(obj.empleado, 'apellido', '') or ''
+        full = f"{nombre} {apellido}".strip()
+        return full or str(obj.empleado)
 
     def _acum_financiero(self, obj):
         bruto_sum = Decimal('0.00')
