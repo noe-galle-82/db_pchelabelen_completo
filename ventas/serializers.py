@@ -42,6 +42,37 @@ class VentaSerializer(serializers.ModelSerializer):
         return mc
 
 
+class VentaListSerializer(serializers.ModelSerializer):
+    fecha = serializers.DateTimeField(source='fecha_venta', read_only=True)
+    total = serializers.DecimalField(source='monto_total', max_digits=12, decimal_places=2, read_only=True)
+    medio_pago = serializers.CharField(read_only=True)
+    cliente_nombre = serializers.SerializerMethodField()
+    items = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Venta
+        fields = ['id', 'fecha', 'total', 'medio_pago', 'cliente_nombre', 'items']
+
+    def get_cliente_nombre(self, obj):
+        if obj.cliente:
+            nombre = getattr(obj.cliente, 'nombre', '') or ''
+            apellido = getattr(obj.cliente, 'apellido', '') or ''
+            full = f"{nombre} {apellido}".strip()
+            return full or str(obj.cliente)
+        return None
+
+    def get_items(self, obj):
+        # Espera prefetch de detalles__id_producto en la vista
+        data = []
+        for det in getattr(obj, 'detalles').all():
+            prod_nombre = getattr(det.id_producto, 'nombre', None)
+            data.append({
+                'producto_nombre': prod_nombre,
+                'cantidad': det.cantidad,
+            })
+        return data
+
+
 class VentaItemInputSerializer(serializers.Serializer):
     # Soporta snake y camelCase
     producto_id = serializers.IntegerField(required=True)

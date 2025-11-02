@@ -1,12 +1,14 @@
 from decimal import Decimal
 from django.db import transaction
 from django.utils import timezone
-from rest_framework import viewsets, status, serializers
+from rest_framework import viewsets, status, serializers, mixins, filters as drf_filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Venta, DetalleVenta
-from .serializers import VentaSerializer, VentaCreateSerializer
+from .serializers import VentaSerializer, VentaCreateSerializer, VentaListSerializer
+from .filters import VentaFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from core.models import EmpleadoProfile, Producto
 from clientes.models import Clientes
 from lotes.models import Lote
@@ -15,8 +17,23 @@ from tipo_movimientos.models import TipoMovimiento
 from tipo_pago.models import TipoPago
 
 
-class VentaViewSet(viewsets.GenericViewSet):
+class VentaViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
 	permission_classes = [IsAuthenticated]
+
+	queryset = (Venta.objects
+				.select_related('cliente')
+				.prefetch_related('detalles__id_producto'))
+
+	filter_backends = [DjangoFilterBackend, drf_filters.SearchFilter, drf_filters.OrderingFilter]
+	filterset_class = VentaFilter
+	search_fields = ['cliente__nombre', 'cliente__apellido', 'cliente__email', 'numero', 'detalles__id_producto__nombre']
+	ordering_fields = ['fecha_venta', 'monto_total']
+	ordering = ['-fecha_venta']
+
+	def get_serializer_class(self):
+		if self.action == 'list':
+			return VentaListSerializer
+		return VentaSerializer
 
 	def get_empleado(self, user):
 		try:
