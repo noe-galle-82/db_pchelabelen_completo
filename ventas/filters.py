@@ -15,13 +15,10 @@ class VentaFilter(django_filters.FilterSet):
         fields = ['medio_pago', 'empleado_id']
 
     def _parse_date(self, value: str):
-        # Aceptar ambos formatos: ISO (YYYY-MM-DD) y AR (DD-MM-YYYY)
-        for fmt in ("%Y-%m-%d", "%d-%m-%Y"):
-            try:
-                return datetime.strptime(value, fmt)
-            except Exception:
-                continue
-        return None
+        try:
+            return datetime.strptime(value, "%Y-%m-%d")
+        except Exception:
+            return None
 
     def filter_fecha_desde(self, queryset, name, value):
         d = self._parse_date(value)

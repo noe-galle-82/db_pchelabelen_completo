@@ -3,7 +3,6 @@ from rest_framework import serializers
 from decimal import Decimal
 from .models import Venta, DetalleVenta
 from clientes.models import Clientes
-from django.utils import timezone
 
 
 class LoteAsignadoSerializer(serializers.Serializer):
@@ -21,9 +20,9 @@ class DetalleVentaSerializer(serializers.ModelSerializer):
 
 class VentaSerializer(serializers.ModelSerializer):
     detalles = DetalleVentaSerializer(many=True, read_only=True)
-    fecha = serializers.DateTimeField(source='fecha_venta', read_only=True)
-    fecha_str = serializers.SerializerMethodField()
-    fecha_hora_str = serializers.SerializerMethodField()
+    # Fecha y hora separadas para mejor UX
+    fecha = serializers.SerializerMethodField()
+    hora = serializers.SerializerMethodField()
     cliente = serializers.SerializerMethodField()
     movimiento_caja = serializers.SerializerMethodField()
     empleado_id = serializers.IntegerField(source='empleado.id', read_only=True)
@@ -38,7 +37,7 @@ class VentaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Venta
         fields = [
-            'id', 'numero', 'fecha', 'fecha_str', 'fecha_hora_str', 'cliente', 'medio_pago', 'notas',
+            'id', 'numero', 'fecha', 'hora', 'cliente', 'medio_pago', 'notas',
             'empleado_id', 'empleado_nombre',
             'monto_total', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total',
             'detalles', 'movimiento_caja'
@@ -58,13 +57,15 @@ class VentaSerializer(serializers.ModelSerializer):
         mc = self.context.get('movimiento_caja')
         return mc
 
-    def get_fecha_str(self, obj):
-        dt = timezone.localtime(obj.fecha_venta) if timezone.is_aware(obj.fecha_venta) else obj.fecha_venta
-        return dt.strftime('%d-%m-%Y') if dt else None
+    def get_fecha(self, obj):
+        from django.utils import timezone
+        dt = timezone.localtime(obj.fecha_venta)
+        return dt.strftime("%d-%m-%Y")
 
-    def get_fecha_hora_str(self, obj):
-        dt = timezone.localtime(obj.fecha_venta) if timezone.is_aware(obj.fecha_venta) else obj.fecha_venta
-        return dt.strftime('%d-%m-%Y %H:%M') if dt else None
+    def get_hora(self, obj):
+        from django.utils import timezone
+        dt = timezone.localtime(obj.fecha_venta)
+        return dt.strftime("%H:%M")
 
     def get_empleado_nombre(self, obj):
         if not getattr(obj, 'empleado', None):
@@ -103,9 +104,9 @@ class VentaSerializer(serializers.ModelSerializer):
 
 
 class VentaListSerializer(serializers.ModelSerializer):
-    fecha = serializers.DateTimeField(source='fecha_venta', read_only=True)
-    fecha_str = serializers.SerializerMethodField()
-    fecha_hora_str = serializers.SerializerMethodField()
+    # Fecha y hora separadas para listado
+    fecha = serializers.SerializerMethodField()
+    hora = serializers.SerializerMethodField()
     total = serializers.DecimalField(source='monto_total', max_digits=12, decimal_places=2, read_only=True, coerce_to_string=False)
     medio_pago = serializers.CharField(read_only=True)
     numero = serializers.CharField(read_only=True)
@@ -120,7 +121,7 @@ class VentaListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Venta
-    fields = ['id', 'fecha', 'fecha_str', 'fecha_hora_str', 'total', 'medio_pago', 'numero', 'cliente_nombre', 'empleado_id', 'empleado_nombre', 'items', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total']
+        fields = ['id', 'fecha', 'hora', 'total', 'medio_pago', 'numero', 'cliente_nombre', 'empleado_id', 'empleado_nombre', 'items', 'bruto', 'descuento_total', 'recargo_total', 'impuestos_total']
 
     def get_cliente_nombre(self, obj):
         if obj.cliente:
@@ -151,13 +152,15 @@ class VentaListSerializer(serializers.ModelSerializer):
         full = f"{nombre} {apellido}".strip()
         return full or str(obj.empleado)
 
-    def get_fecha_str(self, obj):
-        dt = timezone.localtime(obj.fecha_venta) if timezone.is_aware(obj.fecha_venta) else obj.fecha_venta
-        return dt.strftime('%d-%m-%Y') if dt else None
+    def get_fecha(self, obj):
+        from django.utils import timezone
+        dt = timezone.localtime(obj.fecha_venta)
+        return dt.strftime("%d-%m-%Y")
 
-    def get_fecha_hora_str(self, obj):
-        dt = timezone.localtime(obj.fecha_venta) if timezone.is_aware(obj.fecha_venta) else obj.fecha_venta
-        return dt.strftime('%d-%m-%Y %H:%M') if dt else None
+    def get_hora(self, obj):
+        from django.utils import timezone
+        dt = timezone.localtime(obj.fecha_venta)
+        return dt.strftime("%H:%M")
 
     def _acum_financiero(self, obj):
         bruto_sum = Decimal('0.00')
