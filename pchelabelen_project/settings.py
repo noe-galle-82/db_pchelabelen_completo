@@ -138,7 +138,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Zona horaria: tomar de .env si está definida, por defecto usar Buenos Aires
+TIME_ZONE = config('TIME_ZONE', default='America/Argentina/Buenos_Aires')
 
 USE_I18N = True
 
@@ -170,6 +171,8 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     # Serializar Decimal como números en lugar de strings
     "COERCE_DECIMAL_TO_STRING": False,
+    # Serializar DateTime en la zona horaria actual e incluir offset
+    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
 }
 
 SIMPLE_JWT = {
