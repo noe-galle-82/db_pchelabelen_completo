@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_rest_passwordreset',
     'django_filters',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'pchelabelen_project.urls'
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Pchela Belén API",
+    "DESCRIPTION": "Documentación OpenAPI generada con drf-spectacular.",
+    "VERSION": "1.0.0",
+}
 
 TEMPLATES = [
     {
@@ -169,6 +175,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     # Serializar Decimal como números en lugar de strings
     "COERCE_DECIMAL_TO_STRING": False,
     # Serializar DateTime en la zona horaria actual e incluir offset
@@ -179,7 +186,6 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=8),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
-
 # Configuración SMTP para envío de emails con SendGrid
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"  # SendGrid SMTP
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Para debug (comentado)

@@ -12,6 +12,8 @@ from ventas.views import VentaViewSet
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -30,10 +32,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('api/password_reset/', include('django_rest_passwordreset.urls',  namespace='password_reset')),
     path("api/", include(router.urls)),
     path("api/me/", me, name="me"),
     path("api/users/", get_users, name="get_users"),
+    # OpenAPI schema & UIs
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path('', include('core.urls')),
     path('', include('compras.urls')),
 ]
